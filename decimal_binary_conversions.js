@@ -97,55 +97,73 @@ function getSimpleDecimalFrom2sComplement(arr) {
  * @returns {String} the output of the conversion
  */
 function getJsNumberRepresentation(num) {
-  // Handle special cases: Infinity, -Infinity, NaN
-  if (!isFinite(num)) {
-    return num.toString();  // Return string representation for special cases
+  // Check if the input is a valid num
+  if (typeof num !== 'number' || isNaN(num)) {
+    throw new Error('Invalid input. Please provide a valid num.');
   }
 
-  // Get sign bit
-  let signBit = num < 0 ? 1 : 0;
-
-  // Make input positive for easier processing
-  num = Math.abs(num);
-
-  // Handle zero separately
-  if (num === 0) {
-    return (signBit << 63).toString(2).padStart(64, '0');
+  // Create a Float64Array with a single element
+  var float64Array = new Float64Array(1);
+  
+  // Set the value of the array to the given num
+  float64Array[0] = num;
+  
+  // Get the DataView of the array
+  var dataView = new DataView(float64Array.buffer);
+  
+  // Extract the 64-bit binary representation as a string
+  var binaryRepresentation = '';
+  for (var i = 7; i >= 0; i--) {
+    binaryRepresentation += ('00000000' + dataView.getUint8(i).toString(2)).slice(-8);
   }
-
-  // Calculate exponent and mantissa
-  let exponent = Math.floor(Math.log2(num));
-  let normalizedMantissa = num * Math.pow(2, 52 - exponent);
-
-  // Convert to binary strings
-  let exponentBits = (exponent + 1023).toString(2).padStart(11, '0');
-  let mantissaBits = Math.floor(normalizedMantissa).toString(2).padStart(52, '0');
-
-  // Combine sign, exponent, and mantissa bits
-  let ieee754Bits = signBit + exponentBits + mantissaBits;
-
-  // Ensure the result is exactly 64 bits
-  ieee754Bits = ieee754Bits.padEnd(64, '0').slice(0, 64);
-
-  return ieee754Bits;
+  
+  return binaryRepresentation;
 }
 
-// return number from 52 array
-function getNumericFromJsRepresentation(binaryString) {
-  // Extract sign, exponent, and mantissa bits
-  let signBit = parseInt(binaryString.charAt(0), 2);
-  let exponentBits = binaryString.slice(1, 12);
-  let mantissaBits = binaryString.slice(12);
 
-  // Convert binary strings to decimal numbers
-  let exponent = parseInt(exponentBits, 2) - 1023;
-  let mantissa = parseInt(mantissaBits, 2) / Math.pow(2, 52);
+/**This is a function to give a number from the 64-bit representation
+* @param {*} num the input to convert in decimal
+* @throws {Error} when there is some issue while converting
+* @returns {Number} the number representation of the 64-bit binary
+*/
+function getNumericFromJsRepresentation(num) {
+  let binaryRepresentation;
 
-  // Calculate the final value
-  let result = Math.pow(-1, signBit) * (1 + mantissa) * Math.pow(2, exponent);
+  // Check if the num is a number and convert it to a binary string
+  if (typeof num === 'number') {
+    binaryRepresentation = num.toString(2);
+    // Pad with zeros to ensure it's 64 bits long
+    binaryRepresentation = '0'.repeat(64 - binaryRepresentation.length) + binaryRepresentation;
+  } else if (Array.isArray(num)) {
+    // Check if the num is an array of binary digits
+    if (!num.every(bit => bit === 0 || bit === 1)) {
+      throw new Error('Invalid num. Please provide a valid array of binary digits (0 or 1).');
+    }
+    // Join the array into a string
+    binaryRepresentation = num.join('');
+    // Pad with zeros to ensure it's 64 bits long
+    binaryRepresentation = '0'.repeat(64 - binaryRepresentation.length) + binaryRepresentation;
+  } else if (typeof num === 'string') {
+    // Check if the num is a valid binary string
+    if (!/^[01]+$/.test(num)) {
+      throw new Error('Invalid num. Please provide a valid binary string.');
+    }
+    // Pad with zeros to ensure it's 64 bits long
+    binaryRepresentation = '0'.repeat(64 - num.length) + num;
+  } else {
+    throw new Error('Invalid num. Please provide a number, an array of binary digits, or a binary string.');
+  }
+
+  // Split the binary string into sign, exponent, and fraction parts
+  const sign = parseInt(binaryRepresentation.charAt(0), 2) === 0 ? 1 : -1;
+  const exponent = parseInt(binaryRepresentation.substr(1, 11), 2) - 1023;
+  const fraction = parseInt(binaryRepresentation.substr(12), 2) / Math.pow(2, 52);
+
+  // Calculate the final number
+  const result = sign * Math.pow(2, exponent) * (1 + fraction);
 
   return result;
-}
+ }
 
 // INPUTS
 console.log(
@@ -167,5 +185,5 @@ console.log(
 );
 
 console.log(
-  "JS NUmber Representation: " + getNumericFromJsRepresentation("0100000000001100100011110101110000101000111101011100001010001111")
+  "JS NUmber Representation: " + getNumericFromJsRepresentation("0100000000001001000111101011100001010001111010111000010100011111")
 );
