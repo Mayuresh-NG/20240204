@@ -91,11 +91,61 @@ function getSimpleDecimalFrom2sComplement(arr) {
   return -parseInt(finres, 2);
 }
 
-// len 52 array from number
-function getJsNumberRepresentation() {}
+/**This is a function to give a 64-bit javascript binary representation
+ * @param {Number} number the number that you want to convert
+ * @throws {Error} when the input number is not valid
+ * @returns {String} the output of the conversion
+ */
+function getJsNumberRepresentation(num) {
+  // Handle special cases: Infinity, -Infinity, NaN
+  if (!isFinite(num)) {
+    return num.toString();  // Return string representation for special cases
+  }
+
+  // Get sign bit
+  let signBit = num < 0 ? 1 : 0;
+
+  // Make input positive for easier processing
+  num = Math.abs(num);
+
+  // Handle zero separately
+  if (num === 0) {
+    return (signBit << 63).toString(2).padStart(64, '0');
+  }
+
+  // Calculate exponent and mantissa
+  let exponent = Math.floor(Math.log2(num));
+  let normalizedMantissa = num * Math.pow(2, 52 - exponent);
+
+  // Convert to binary strings
+  let exponentBits = (exponent + 1023).toString(2).padStart(11, '0');
+  let mantissaBits = Math.floor(normalizedMantissa).toString(2).padStart(52, '0');
+
+  // Combine sign, exponent, and mantissa bits
+  let ieee754Bits = signBit + exponentBits + mantissaBits;
+
+  // Ensure the result is exactly 64 bits
+  ieee754Bits = ieee754Bits.padEnd(64, '0').slice(0, 64);
+
+  return ieee754Bits;
+}
 
 // return number from 52 array
-function getNumericFromJsRepresentation() {}
+function getNumericFromJsRepresentation(binaryString) {
+  // Extract sign, exponent, and mantissa bits
+  let signBit = parseInt(binaryString.charAt(0), 2);
+  let exponentBits = binaryString.slice(1, 12);
+  let mantissaBits = binaryString.slice(12);
+
+  // Convert binary strings to decimal numbers
+  let exponent = parseInt(exponentBits, 2) - 1023;
+  let mantissa = parseInt(mantissaBits, 2) / Math.pow(2, 52);
+
+  // Calculate the final value
+  let result = Math.pow(-1, signBit) * (1 + mantissa) * Math.pow(2, exponent);
+
+  return result;
+}
 
 // INPUTS
 console.log(
@@ -112,3 +162,10 @@ console.log(
     getSimpleDecimalFrom2sComplement([1,1,1,0,1,1,0,1])
 );
 
+console.log(
+  "JS NUmber Representation: " + getJsNumberRepresentation(3.14)
+);
+
+console.log(
+  "JS NUmber Representation: " + getNumericFromJsRepresentation("0100000000001100100011110101110000101000111101011100001010001111")
+);
