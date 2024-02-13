@@ -1,4 +1,3 @@
-"use strict";
 /* My Class-based implementation of an infinite precision Integer. */
 
 class InfiniteNumber {
@@ -76,7 +75,6 @@ class InfiniteNumber {
     }
   }
 
-
   /** Helper method to return the representation of this Infinite Precision
    *
    */
@@ -134,9 +132,7 @@ class InfiniteNumber {
     return this.getNumberAsString(finres);
   }
 
-  sub(tosub)
-  {
-
+  sub(tosub) {
     let res = tosub._internalArray;
 
     let maxi = Math.max(ob1._internalArray.length, res.length) - 1;
@@ -172,7 +168,7 @@ class InfiniteNumber {
 
       mini--;
     }
-    
+
     // if number to be subtracted is smaller than number  being subtracted from
     // then add negative sign in front
     let lenarr1 = parseInt(ob1._internalArray.join(""), 10);
@@ -189,72 +185,148 @@ class InfiniteNumber {
       finres.shift();
     }
 
-    if(ob1._internalArray.length==res.length && lenarr1>lenarr2)
-    {
-      finres = lenarr1-lenarr2
-      return finres.toString()
+    if (ob1._internalArray.length == res.length && lenarr1 > lenarr2) {
+      finres = lenarr1 - lenarr2;
+      return finres.toString();
     }
 
     return finres.join("");
   }
 
-  mul(tomul)
-  {
+  mul(tomul) {
     let flag = 0;
     let res = tomul._internalArray;
-  // if both numbers are negative then convert them to postive by changing sign
-  if (ob1._internalArray[0] < 0 && res[0] < 0) {
-    ob1._internalArray[0] = -ob1._internalArray[0];
-    res[0] = -res[0];
-  }
-
-  // changing sign for neagtive number
-  else if (ob1._internalArray[0] < 0) {
-    flag = 1;
-    ob1._internalArray[0] = -ob1._internalArray[0];
-  }
-
-  // changing sign for neagtive number
-  else if (res[0] < 0) {
-    flag = 1;
-    res[0] = -res[0];
-  }
-
-  // finding the length of array
-  const len1 = ob1._internalArray.length - 1;
-  const len2 = res.length - 1;
-
-  // Initialize an array to store the result, resultant array will be adition of length of two array
-  const result = new Array(2 + len1 + len2).fill(0);
-
-  // Nested loop for multiplication
-  for (let i = len1; i >= 0; i--) {
-    for (let j = len2; j >= 0; j--) {
-      const product = ob1._internalArray[i] * res[j];
-      const sum = result[i + j + 1] + product;
-
-      result[i + j + 1] = sum % 10; // Update the current digit
-      result[i + j] += Math.floor(sum / 10); // Add carry to the previous digit
+    // if both numbers are negative then convert them to postive by changing sign
+    if (ob1._internalArray[0] < 0 && res[0] < 0) {
+      ob1._internalArray[0] = -ob1._internalArray[0];
+      res[0] = -res[0];
     }
+
+    // changing sign for neagtive number
+    else if (ob1._internalArray[0] < 0) {
+      flag = 1;
+      ob1._internalArray[0] = -ob1._internalArray[0];
+    }
+
+    // changing sign for neagtive number
+    else if (res[0] < 0) {
+      flag = 1;
+      res[0] = -res[0];
+    }
+
+    // finding the length of array
+    const len1 = ob1._internalArray.length - 1;
+    const len2 = res.length - 1;
+
+    // Initialize an array to store the result, resultant array will be adition of length of two array
+    const result = new Array(2 + len1 + len2).fill(0);
+
+    // Nested loop for multiplication
+    for (let i = len1; i >= 0; i--) {
+      for (let j = len2; j >= 0; j--) {
+        const product = ob1._internalArray[i] * res[j];
+        const sum = result[i + j + 1] + product;
+
+        result[i + j + 1] = sum % 10; // Update the current digit
+        result[i + j] += Math.floor(sum / 10); // Add carry to the previous digit
+      }
+    }
+
+    // Remove leading zeros
+    while (result[0] === 0 && result.length > 1) {
+      result.shift();
+    }
+
+    // adding negative sign if multiplication is negative
+    if (flag == 1) {
+      result.unshift("-");
+    }
+
+    return this.getNumberAsString(result);
   }
 
-  // Remove leading zeros
-  while (result[0] === 0 && result.length > 1) {
-    result.shift();
+  helpermul(divisor, multiplier) {
+    divisor = Array.from(String(divisor), Number);
+
+    let numberArray=[]
+    if (multiplier > 9) {
+      numberArray = Array.from(multiplier.toString(), Number);
+    }
+    else numberArray[0]=multiplier;
+    let flag = 0;
+
+    // if both numbers are negative then convert them to postive by changing sign
+    if (divisor[0] < 0 && numberArray[0] < 0) {
+      divisor[0] = -divisor[0];
+      numberArray[0] = -numberArray[0];
+    }
+
+    // changing sign for neagtive number
+    else if (divisor[0] < 0) {
+      flag = 1;
+      divisor[0] = -divisor[0];
+    }
+
+    // changing sign for neagtive number
+    else if (numberArray[0] < 0) {
+      flag = 1;
+      numberArray[0] = -numberArray[0];
+    }
+
+    // finding the length of array
+    const len1 = divisor.length - 1;
+    const len2 = numberArray.length - 1;
+
+    // Initialize an array to store the result, resultant array will be adition of length of two array
+    const result = new Array(2 + len1 + len2).fill(0);
+
+    // Nested loop for multiplication
+    for (let i = len1; i >= 0; i--) {
+      for (let j = len2; j >= 0; j--) {
+        const product = divisor[i] * numberArray[j];
+        const sum = result[i + j + 1] + product;
+
+        result[i + j + 1] = sum % 10; // Update the current digit
+        result[i + j] += Math.floor(sum / 10); // Add carry to the previous digit
+      }
+    }
+
+    // Remove leading zeros
+    while (result[0] === 0 && result.length > 1) {
+      result.shift();
+    }
+
+    // adding negative sign if multiplication is negative
+    if (flag == 1) {
+      result.unshift("-");
+    }
+
+    return parseInt(result.join(""),10)
   }
 
-  // adding negative sign if multiplication is negative
-  if (flag == 1) {
-    result.unshift("-");
-  }
+  div(todiv) {
+    let arr1 = ob1._internalArray;
+    let arr2 = todiv._internalArray;
+    var temp = parseInt(arr2.join(''), 10);;
+    let quotient = 0;
 
-  return this.getNumberAsString(result)
+    var nums = parseInt(arr1.join(''), 10); 
+    let sum=temp;
+
+    let i = 1;
+    while (sum<nums) {
+    sum = this.helpermul(temp, i);
+      i++;
+      quotient++;
+    }
+    return quotient;
   }
 }
 
-const ob1 = new InfiniteNumber([1, 2, 3, 4]);
-const ob2 = new InfiniteNumber([5, 6, 7, 8]);
+const ob1 = new InfiniteNumber(156);
+const ob2 = new InfiniteNumber(12);
 
 console.log("Addition is " + ob1.add(ob2));
 console.log("Subtraction is " + ob1.sub(ob2));
-console.log("Subtraction is " + ob1.mul(ob2));
+console.log("Multiplication is " + ob1.mul(ob2));
+console.log("Diviision is " + ob1.div(ob2));
