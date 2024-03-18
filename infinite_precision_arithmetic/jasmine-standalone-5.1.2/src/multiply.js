@@ -8,6 +8,9 @@
  * @returns {Array} result - The product of the two numbers as an array.
  */
 function multiply(arr1, arr2) {
+  if ((arr1.length === 1 && arr1[0] === 0) || (arr2.length === 1 && arr2[0] === 0)) {
+    return 0;
+  }
   // flag to check negative numbers
   let flag = 0;
 
@@ -18,7 +21,7 @@ function multiply(arr1, arr2) {
   }
 
   // changing sign for neagtive number
-  else if (arr1[0] < 0) {
+  else if (arr1[0] < 0 ) {
     flag = 1;
     arr1[0] = -arr1[0];
   }

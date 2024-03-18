@@ -15,6 +15,11 @@ function add(arr1, arr2) {
   if (arr1[0] < 0 || arr2[0] < 0) {
     throw new Error("Negative values in the array are not allowed.");
   }
+
+   // Validation to check if each element of the array is a single digit
+   if (!arr1.every(num => num >= 0 && num < 10) || !arr2.every(num => num >= 0 && num < 10)) {
+    throw new Error("Each element of the array must be a single digit (0-9).");
+  }
   /**
    * @maxi - length of the longest array
    * @mini - length of the smallest array
@@ -60,7 +65,7 @@ function add(arr1, arr2) {
     res.unshift(carry);
   }
 
-  return res.join("");
+  return parseInt(res.join(""));
 }
 
 // INPUTS
